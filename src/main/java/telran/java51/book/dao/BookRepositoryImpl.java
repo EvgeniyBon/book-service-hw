@@ -4,9 +4,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -14,7 +14,7 @@ import telran.java51.book.model.Book;
 
 @Repository
 public class BookRepositoryImpl implements BookRepository {
-	
+
 	@PersistenceContext
 	EntityManager em;
 
@@ -27,7 +27,8 @@ public class BookRepositoryImpl implements BookRepository {
 
 	@Override
 	public Stream<Book> findByPublisherPublisherName(String name) {
-		TypedQuery<Book> query = em.createQuery("select b from Publisher p join p.books b where p.publisherName=?1", Book.class);
+		TypedQuery<Book> query = em.createQuery("select b from Publisher p join p.books b where p.publisherName=?1",
+				Book.class);
 		query.setParameter(1, name);
 		return query.getResultStream();
 	}
@@ -52,16 +53,20 @@ public class BookRepositoryImpl implements BookRepository {
 
 	@Override
 	public Optional<Book> findById(String isbn) {
-		return Optional.ofNullable(em.find(Book.class, isbn));
+		TypedQuery<Book> query = em.createQuery("select b from Book b join fetch b.authors where b.isbn=?1",
+				Book.class);
+		query.setParameter(1, isbn);
+		Book book = query.getSingleResult();
+		return Optional.ofNullable(book);
 	}
 
 	@Override
 	public void deleteById(String isbn) {
-		Book book = em.find(Book.class, isbn);
-		em.remove(book);
-//		Query query = em.createQuery("delete from Book b where b.isbn=?1");
-//		query.setParameter(1, isbn);
-//		query.executeUpdate();
+//		Book book = em.find(Book.class, isbn);
+//		em.remove(book);
+		Query query = em.createQuery("delete from Book b where b.isbn=?1");
+		query.setParameter(1, isbn);
+		query.executeUpdate();
 	}
 
 }
