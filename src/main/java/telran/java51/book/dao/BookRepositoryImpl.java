@@ -4,9 +4,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
@@ -14,7 +14,7 @@ import telran.java51.book.model.Book;
 
 @Repository
 public class BookRepositoryImpl implements BookRepository {
-
+	
 	@PersistenceContext
 	EntityManager em;
 
@@ -27,8 +27,7 @@ public class BookRepositoryImpl implements BookRepository {
 
 	@Override
 	public Stream<Book> findByPublisherPublisherName(String name) {
-		TypedQuery<Book> query = em.createQuery("select b from Publisher p join p.books b where p.publisherName=?1",
-				Book.class);
+		TypedQuery<Book> query = em.createQuery("select b from Publisher p join p.books b where p.publisherName=?1", Book.class);
 		query.setParameter(1, name);
 		return query.getResultStream();
 	}
